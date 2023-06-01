@@ -16,7 +16,7 @@ Assim, surgiu o que denominamos de Ecossistema .NET, que vem como uma forma de u
 
 Criemos, a princípio, um arquivo de texto vazio em qualquer editor de texto (utilizarei o **Notepad++**, mas o Bloco de Notas serve da mesma forma). Nele, insira o seguinte código:
 
-```c#
+```cs
 using System;
 
 class Program {
@@ -35,3 +35,53 @@ Onde está este compilador? Na pasta `C:\Windows\Microsoft.NET\Framework\v4.0.30
 Abra o seu terminal e execute o seguinte:
 `c:\Windows\Microsoft.NET\Framework\v4.0.30319\csc.exe hello_world.txt`. Esse comando executará o compilador no arquivo "hello_world.txt", gerando um novo arquivo: `hello_world.exe`. Assim, dentro do diretório onde está esse novo arquivo, digite no seu terminal: `hello_world.exe`. Desse modo, será impresso no terminal a mensagem "Hello, world!". Que prático, não é?!
 
+Nem sempre...
+
+## 3. MIGRANDO PARA O VISUAL STUDIO
+O Visual Studio é uma IDE desenvolvida e mantida pela Microsoft, utilizada especialmente para a construção de aplicações em .NET Framework graças à toda sua estrutura, mas que abriga uma diversidade de outras linguagens como C++. É uma IDE extremamente poderosa: apesar de pesada, contém tudo que é necessário para aumentar a produtividade do programador.
+
+Dentro do Visual Studio 2022, em `Novo -> Projeto`, seleciono, dentro da seleção de modelos, `Aplicativo do Console (.NET Framework)`; depois, o local onde o projeto será criado, o nome da solução, do projeto, a versão `.NET Framework 4.7.2` e confirmo.
+
+Após criado, é gerado o seguinte código base:
+```cs
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace FirstProject
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+        }
+    }
+}
+```
+
+Vamos por partes:
+* using System: informa que estou usando a biblioteca .NET `System`, que vem com classes e funções já definidos, como `Console` e seus métodos. 
+* namespace: uma forma de organizar e definir de onde vem cada trecho importado do seu código. Por exemplo, posso criar classes dentro de namespaces diferentes e, por meio do `using`, importar cada um dos namespaces e acessar suas classes e métodos, evitando que, por exemplo, precisemos escrever `System.Console.WriteLine()` e `System.Console.ReadLine()` múltiplas vezes.
+* método Main: o método de "start" de sua aplicação.
+
+Ao acessar a pasta onde está o novo projeto criado, temos um arquivo de extensão `.sln` e uma pasta com o nome do projeto (FirstProject). Este arquivo de extensão .sln refere-se à solução como um todo, ou seja, em um aplicativo .NET podem existir diversos projetos (FirstProject, SecondProject, ...) que pertencem à mesma solução (no meu caso, *AppConsole*).
+
+Com algumas adições, produzo o seguinte código:
+```cs
+using System;
+
+namespace FirstProject
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("hey, who are you?");
+            var name = Console.ReadLine();
+            Console.WriteLine("hello, " + name + "!");
+        }
+    }
+}
+```
