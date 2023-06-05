@@ -121,3 +121,117 @@ Assim, temos que um variável do tipo *float* pode receber valores *inteiros* (p
 Para representar textos, temos dois tipos principais:
 * `char`: representa 1 único caractere de acordo com a tabela ASCII, e seus valores devem ser escritos entre aspas simples; internamente, o tipo *char* representa um número na memória de acordo com a tabela mencionada acima. Podemos declarar valores de duas formas: utilizando diretamente o caractere - `char value = '=';` ou atribuindo o número do caractere na tabela ASCII - `char value = (char)61;`;
 * `string`: representa uma cadeia de caracteres, e seus valores são escritos entre aspas duplas. Uma string pode ser vazia ou não e ter múltiplas linhas ou não; para quebrar linhas de uma string, podemos usar a expressão `\n`. Exemplos: `string hello = "hello, \n kingslayer.";`, `string alert = "be careful, dragons may lay ahead";`
+
+## 5. CONTROLE DE FLUXO COM IF-ELSE
+
+O uso dos comandos `if` e `else` permite que o programa realize diferentes procedimentos de acordo com certas condições, como liberar o acesso de certos usuários a áreas administrativas de um site, por exemplo. Para criar as condições, são usados operadores lógicos (`||`, `!` ou `&&`), e cada condição pode assumir um valor **booleano**, ou seja, `true` ou `false`.
+Sua sintaxe é:
+```cs
+if (<condição> == true ou false) 
+{
+    <código>
+}
+else if (<condição> == true ou false) // Opcional 
+{
+    <código>
+}
+else 
+{
+    <código>
+}
+```
+Podemos, além disso, colocar instruções *if* dentro de outros *if*, realizando uma verificação ainda mais complexa.
+
+
+> Para exemplificar tudo isso, aqui está um código que, com base na idade inserida pelo usuário, informa se ele pode votar, e se é de obrigatório ou não:
+```cs
+using System;
+
+namespace FirstProject
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Caro usuário, digite a sua idade: ");
+            int age = Console.Read();
+            // Se idade for maior ou igual a 16:
+            if (age >= 16)
+            {
+                // Se idade for menor que 18 ou maior ou igual a 70:
+                if (age < 18 || age >= 70)
+                {
+                    Console.WriteLine("Seu voto é facultativo!");
+                }
+                // Se a idade estiver entre 18 e 69:
+                else
+                {
+                    Console.WriteLine("Seu voto é obrigatório.");
+                }
+            }   
+            // Se idade for menor que 16:
+            else
+            {
+                Console.WriteLine("Você não pode votar.");
+            }
+        }
+    }
+}
+```
+
+### 5.1 SWITCH CASE
+Uma maneira alternativa de lidar com controle de fluxo e reduzir a quantidade de instruções *if*. Não é aplicável em todos os casos, mas ainda é muito útil. Sua sintaxe é:
+```cs
+switch (<variável>) 
+{
+    case <opção1>:
+        <código a ser executado quando a opção 1 for escolhida>
+        break;
+    case <opção2>:
+        <código a ser executado quando a opção 2 for escolhida>
+        break;
+    case <opção3>:
+        <código a ser executado quando a opção 3 for escolhida>
+        break;
+    default:
+        <código a ser executado quando nenhum dos outros casos for escolhido>
+        break;
+}
+```
+
+> Para exemplificar, será elaborado um algoritmo para imprimir as fórmulas do cálculo da área de certas figuras geométricas.
+```cs
+using System;
+
+namespace FirstProject
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Caro usuário, informe a forma geométrica que deseja conhecer a fórmula da área: ");
+            string age = Console.ReadLine();
+            switch (age) {
+                case "Triângulo":
+                    Console.WriteLine("(base x altura) / 2");
+                    break;
+                case "Retângulo":
+                    Console.WriteLine("base x altura");
+                    break;
+                case "Quadrado":
+                    Console.WriteLine("lado elevado a 2");
+                    break;
+                case "Losângo":
+                    Console.WriteLine("(diagonal Maior x diagonal menor) / 2");
+                    break;
+                case "Trapézio":
+                    Console.WriteLine("(base Maior + base Menor) x altura / 2");
+                    break;
+                default:
+                    Console.Write("Insira uma definida aqui.");
+                    break;
+            }
+        }
+    }
+}
+```
