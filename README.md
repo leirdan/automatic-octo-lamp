@@ -62,9 +62,9 @@ namespace FirstProject
 ```
 
 Vamos por partes:
-* using System: informa que estou usando a biblioteca .NET `System`, que vem com classes e funções já definidos, como `Console` e seus métodos. 
-* namespace: uma forma de organizar e definir de onde vem cada trecho importado do seu código. Por exemplo, posso criar classes dentro de namespaces diferentes e, por meio do `using`, importar cada um dos namespaces e acessar suas classes e métodos, evitando que, por exemplo, precisemos escrever `System.Console.WriteLine()` e `System.Console.ReadLine()` múltiplas vezes.
-* método Main: o método de "start" de sua aplicação.
+* `using System`: informa que estou usando a biblioteca .NET `System`, que vem com classes e funções já definidos, como `Console` e seus métodos. 
+* `namespace`: uma forma de organizar e definir de onde vem cada trecho importado do seu código. Por exemplo, posso criar classes dentro de namespaces diferentes e, por meio do `using`, importar cada um dos namespaces e acessar suas classes e métodos, evitando que, por exemplo, precisemos escrever `System.Console.WriteLine()` e `System.Console.ReadLine()` múltiplas vezes.
+* `método Main`: o método de "start" de sua aplicação.
 
 Ao acessar a pasta onde está o novo projeto criado, temos um arquivo de extensão `.sln` e uma pasta com o nome do projeto (FirstProject). Este arquivo de extensão .sln refere-se à solução como um todo, ou seja, em um aplicativo .NET podem existir diversos projetos (FirstProject, SecondProject, ...) que pertencem à mesma solução (no meu caso, *AppConsole*).
 
@@ -85,3 +85,39 @@ namespace FirstProject
     }
 }
 ```
+
+## 4. VARIÁVEIS
+Variáveis no C# devem ter um tipo declarado: nada de apenas `numero = 5` do Python; aqui, devemos utilizar `int idade = 5`. Essa declaração mais rígida nos permite evitar ambiguidade de código e tornar o código mais legível; particularmente, é preferível isso do que não saber rapidamente de que tipo/classe aquela variável deriva.  
+
+Existem tipos de variáveis como as numéricas (`int, short, long, double, float`) e as textuais (`char, string`).
+
+### 4.1 CONVERSÃO
+Caso se depare com uma variável de um tipo diferente do que deseja trabalhar, é possível converter (à força) o valor da variável para um tipo diferente, como:
+```cs
+Console.WriteLine("Insira seu salário: ");
+double salario = Console.Read();
+Console.WriteLine("Seu salário é " + (int) salario);
+```
+
+O tipo entre parênteses sinaliza que a variável `salario` será convertida do tipo *double* para o tipo inteiro.
+
+Contudo, não é necessário fazer conversões explícitas sempre. O C# trabalha com um sistema de conversão de tipos "menores" em "maiores". Tome a tabela abaixo como referência:
+
+TIPO | TAMANHO
+----- | -----
+boolean | 1 byte
+byte | 1 byte
+short | 2 bytes
+char | 2 bytes
+int | 4 bytes
+float | 4 bytes
+long | 8 bytes
+double | 8 bytes
+
+Assim, temos que um variável do tipo *float* pode receber valores *inteiros* (pois tem "mais bytes"), enquanto o contrário não ocorre.
+
+### 4.2 TEXTOS
+
+Para representar textos, temos dois tipos principais:
+* `char`: representa 1 único caractere de acordo com a tabela ASCII, e seus valores devem ser escritos entre aspas simples; internamente, o tipo *char* representa um número na memória de acordo com a tabela mencionada acima. Podemos declarar valores de duas formas: utilizando diretamente o caractere - `char value = '=';` ou atribuindo o número do caractere na tabela ASCII - `char value = (char)61;`;
+* `string`: representa uma cadeia de caracteres, e seus valores são escritos entre aspas duplas. Uma string pode ser vazia ou não e ter múltiplas linhas ou não; para quebrar linhas de uma string, podemos usar a expressão `\n`. Exemplos: `string hello = "hello, \n kingslayer.";`, `string alert = "be careful, dragons may lay ahead";`
