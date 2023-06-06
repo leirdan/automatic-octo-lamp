@@ -235,3 +235,71 @@ namespace FirstProject
     }
 }
 ```
+
+## 6. LAÇOS DE REPETIÇÃO
+Serão analisados dois dos laços disponíveis na linguagem C#: o **for** e o **while**. Geralmente, eles são laços que podem ser convertidos um no outro e servem para executar diversas vezes um mesmo trecho de código de forma dinâmica. A seguir, estão mostrados dois exemplos de uso com cada um dos laços:
+> Imprimir todos os múltiplos de 3:
+```cs
+/* WHILE */
+static void Main(string[] args)
+{
+    Console.WriteLine("Os números múltiplos de 3 que estão no intervalo de 1 a 100 são:");
+    int numero = 1;
+    while (numero < 100)
+    {
+        if (numero % 3 == 0)
+        {
+            Console.WriteLine(numero);
+        }
+        numero++;
+    }
+}
+```
+```cs
+/* FOR */
+static void Main(string[] args)
+{
+    Console.WriteLine("Os números múltiplos de 3 que estão no intervalo de 1 a 100 são:");
+    for (int num = 1; num <= 100; num++)
+    {
+        if (num % 3 == 0)
+        {
+            Console.WriteLine(num);
+        }
+    }
+}
+```
+
+> Calcular e imprimir os fatoriais de 1 a 10:
+```cs
+/*  WHILE */
+static void Main(string[] args)
+{
+    Console.WriteLine("Os fatoriais de cada número de 1 a 10 são: ");
+    int numero = 1;
+    int result = 1;
+    while (numero <= 10)
+    {
+        while (numero <= 10)
+            {
+                result *= numero;
+                Console.WriteLine($"Fatorial de {numero}: {result}");
+                numero++;
+            }
+    }
+}
+```
+
+```cs
+/*  FOR */
+static void Main(string[] args)
+{
+    Console.WriteLine("Os fatoriais de cada número de 1 a 10 são: ");
+    int result = 1;
+    for (int num = 1; num <= 10; num++)
+    {
+        result *= num;
+        Console.WriteLine($"Fatorial de {num}: {result}")
+    }
+}
+```
