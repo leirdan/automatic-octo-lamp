@@ -85,6 +85,7 @@ namespace FirstProject
     }
 }
 ```
+> Obs.: `var` é uma keyword que diz que a variável deve ser do mesmo tipo que o valor que recebe, ou seja, é um tipo implícito; contudo, neste caso, poderia ser perfeitamente substuída por um tipo `string`.
 
 ## 4. VARIÁVEIS
 Variáveis no C# devem ter um tipo declarado: nada de apenas `numero = 5` do Python; aqui, devemos utilizar `int idade = 5`. Essa declaração mais rígida nos permite evitar ambiguidade de código e tornar o código mais legível; particularmente, é preferível isso do que não saber rapidamente de que tipo/classe aquela variável deriva.  
@@ -303,3 +304,75 @@ static void Main(string[] args)
     }
 }
 ```
+##
+# PROGRAMAÇÃO ORIENTADA A OBJETOS COM C SHARP
+
+Nesta seção, serão explicados fundamentos, conceitos e práticas da *Programação Orientada a Objetos* (**POO**), intrínseco ao C# e essencial para a boa utilização da linguagem. Algumas de suas vantagens incluem a *reutilização de código*, *organização* e *melhor manutenção* - tendo em vista que, pela concentração do código em trechos específicos, torna-se mais fácil procurar e encontrar erros.
+
+> Para aplicação prática, foi idealizada uma situação de uma loja de discos de rock e heavy metal chamada *Hellfire Store*. Confira o código no diretório */poo*.
+## 1. FUNDAMENTOS
+### 1.1 CLASSES
+Classes nada mais são que uma forma eficaz de organizar e concentrar o seu código, sendo um "modelo" que define a estrutura de certos objetos que serão usados no algoritmo. Cada classe tem *atributos* e *métodos*; abaixo, um exemplo da estrutura da classe Album da loja Hellfire no arquivo `Album.cs`:
+```cs
+public class Album
+{
+    public string Title;
+    public string Description;
+    public string Country;
+    public double Weight;
+    public int Quantity;
+    public double Price;
+    public int? DaysOfLastPurchase; // atributo opcional
+    public double? Discount = 0.0; // atributo opcional e com valor padrão
+}
+```
+### 1.2 OBJETOS
+Objetos são criados a partir de uma classe previamente definida e usados para representar entidades do mundo real. São declarados da mesma forma que uma variável, mas contém chaves e valores. Exemplo de declaração de um objeto (álbum) no arquivo `Program.cs` (no mesmo projeto que Album.cs):
+```cs
+Album album01 = new Album();
+// Declarando valores para cada uma das propriedades obrigatórias.
+album01.Title = "Rising";
+album01.Description = "A phenomenal album!";
+album01.Country = "UK";
+album01.Weight = 0.256;            
+album01.Price = 60;
+album01.Quantity = 4;
+album01.DaysOfLastPurchase = 120;
+// Acessando tais valores com um "."
+Console.WriteLine(album01.Title); // Rising
+Console.WriteLine(album01.Weight); // 0,256
+Console.WriteLine(album01.Description); // A phenomenal album!
+Console.WriteLine(album01.Country); // UK
+```
+
+### 1.3 MÉTODOS
+Funções dentro de classes são denominadas métodos, e são o que garantem que a classe tenha comportamentos próprios. Os métodos são importantes para que concentremos algoritmos e procedimentos importantes em um só local, chamando-os posteriormente e tornando a manutenção mais fácil. Exemplo de método, implementado na classe `Album.cs`:
+```cs
+public void SellRecord()
+{
+    if (this.Quantity > 0)
+    {
+        Console.Write($"the album's price is US${this.Price}. will you buy it? ");
+        var option = Console.ReadLine();
+        if (option == "yes")
+        {
+            this.Quantity--;
+            Console.Write($"there are left {this.Quantity} units of this disc. ");
+            Console.WriteLine("thanks, bye!");
+        } else if (option == "no")
+        {
+            Console.WriteLine("okay.");
+        }
+        else
+        {
+            Console.WriteLine("you didn't answer my question..");
+            SellRecord(); // executa a função novamente para o usuário decidir.
+        }
+    }
+}
+```
+> Obs.: a keyword `this` é uma palavra genérica utilizada em classes para tornar o comportamento da classe genérico. Assim, ela se refere sempre ao objeto que foi criado utilizando a classe e que está acessando o método no momento. Por exemplo, perceba que, na linha:
+> ```cs
+>album01.SellRecord();
+>```
+> o valor de *Quantity* no método será substituido de *this.Quantity* por 4 (quantidade de album01).
