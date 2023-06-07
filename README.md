@@ -309,7 +309,7 @@ static void Main(string[] args)
 
 Nesta seção, serão explicados fundamentos, conceitos e práticas da *Programação Orientada a Objetos* (**POO**), intrínseco ao C# e essencial para a boa utilização da linguagem. Algumas de suas vantagens incluem a *reutilização de código*, *organização* e *melhor manutenção* - tendo em vista que, pela concentração do código em trechos específicos, torna-se mais fácil procurar e encontrar erros.
 
-> Para aplicação prática, foi idealizada uma situação de uma loja de discos de rock e heavy metal chamada *Hellfire Store*. Confira o código no diretório */poo*.
+> Para aplicação prática, foi idealizada uma situação de uma loja de discos de rock e heavy metal, mas que também aluga guitarras elétricas para músicos, chamada *Hellfire Store*.
 ## 1. FUNDAMENTOS
 ### 1.1 CLASSES
 Classes nada mais são que uma forma eficaz de organizar e concentrar o seu código, sendo um "modelo" que define a estrutura de certos objetos que serão usados no algoritmo. Cada classe tem *atributos* e *métodos*; abaixo, um exemplo da estrutura da classe Album da loja Hellfire no arquivo `Album.cs`:
@@ -346,7 +346,7 @@ Console.WriteLine(album01.Country); // UK
 ```
 
 ### 1.3 MÉTODOS
-Funções dentro de classes são denominadas métodos, e são o que garantem que a classe tenha comportamentos próprios. Os métodos são importantes para que concentremos algoritmos e procedimentos importantes em um só local, chamando-os posteriormente e tornando a manutenção mais fácil. Exemplo de método, implementado na classe `Album.cs`:
+Funções dentro de classes são denominadas métodos, e são o que garantem que a classe tenha comportamentos próprios. Os métodos são importantes para que concentremos algoritmos e procedimentos importantes em um só local, chamando-os posteriormente e tornando a manutenção mais fácil. Exemplo de método que realiza a venda de um disco, implementado na classe `Album.cs`:
 ```cs
 public void SellRecord()
 {
@@ -376,3 +376,156 @@ public void SellRecord()
 >album01.SellRecord();
 >```
 > o valor de *Quantity* no método será substituido de *this.Quantity* por 4 (quantidade de album01).
+
+Exemplo de outro método que foi implementado para garantir descontos em discos que não vendem há um tempo e são mais caros:
+```cs
+public void AssignDiscount(double price, int? days)
+    {
+        if (price > 100 && days >= 120)
+        {
+            this.Discount = price * 0.10;
+        }
+    }
+```
+
+## 2. NAMESPACES
+*Namespaces* são uma ferramenta nas linguagens *C* que possibilita ao programador determinar de onde um código/classe/qualquer coisa vem no seu programa. Suponha que, em uma solução, hajam duas ou mais classes com o mesmo nome mas que referem-se a coisas distintas; como saber qual devo utilizar e como faço para selecionar apenas ela? Através da instrução namespace e sua complementar, *using*. Sua sintaxe é:
+```cs
+using <namespace>;
+
+namespace <nome> {
+    // restante do código
+}
+
+```
+Um exemplo de namespace que é usado recorrentemente é o `System`, o qual contém uma infinidade de métodos e a classe `Console`, por exemplo.
+
+Na situação da *Hellfire Store*, foi criada uma classe adicional de clientes, agrupada em um namespace, tal que temos o seguinte código:
+```cs
+namespace HellfireStore
+{
+    public class Client
+    {
+        public string Name;
+        protected string Address;
+        public int BoughtHowManyAlbums;
+    }
+}
+```
+Agora, foi criada uma nova classe para criar contas para os músicos que fazem o aluguel das guitarras, chamada `Account.cs`:
+
+```cs
+using HellfireStore;
+using System;
+
+class Account
+{
+    public Client Client;
+    public int Rents;
+    public DateTime Created_At;
+    public double? Discount;
+
+    public bool GetDiscount()
+    {
+        if (this.Rents < 6 || (this.Created_At.Month - DateTime.Now.Month) < 6)
+        {
+            return false;
+        }
+        else
+        {
+            this.Discount = 0.10;
+            return true;
+        }
+    }
+}
+```
+> Perceba o uso do `using HellfireStore`. Tal instrução informa ao compilador que o programa fará uso dos códigos presentes neste namespace (ou seja, a classe *Client*); sem isso, teríamos que escrever, sempre, `public HellfireStore.Client client;`
+
+Por fim, falta apenas a classe que representa as guitarras. Assim, temos:
+```cs
+namespace HellfireStore
+{
+    enum HandOrientation
+    {
+        LEFT = 0,
+        RIGHT = 1,
+        BOTH = 2
+    }
+
+    class Guitars
+    {
+        private readonly int id;
+        public string Model;
+        public long ItemNumber;
+        public string Brand;
+        public string Color;
+        public string PredominantMaterial;
+        public HandOrientation HandOrientation;
+        public double Price;
+    }
+}
+```
+> A estrutura *Enum* não é de tamanha importância agora. Neste caso, ela só guarda alguns valores específicos e imutáveis.
+
+Agora, de volta ao arquivo `Program.cs`, será deletado todo o conteúdo anterior e criado um novo para testes.
+
+Program.cs:
+```cs
+using HellfireStore;
+
+internal class Program
+{
+    static void Main(string[] args)
+    {
+        Account nergal = new Account();
+        nergal.Client = new Client
+        {
+            Name = "Adam 'Nergal' Michal Darski",
+            BoughtHowManyAlbums = 14 // 14 vezes que comprou discos
+        };
+        nergal.Rents = 8; // 8 vezes que alugou uma guitarra
+        nergal.Created_At = DateTime.Now;
+        if (nergal.GetDiscount())
+        {
+            Console.WriteLine($"{nergal.Client.Name} have some discount!");
+        }
+        // Executa este.
+        else
+        {
+            Console.WriteLine($"{nergal.Client.Name} doesn't have discount.");
+        }
+    }
+}
+```
+
+Perceba que, caso o `using HellfireStore` seja excluído, não haverá problemas para a classe *Account*, somente para a *Client*, visto que *Account* não pertence a nenhum namespace. Contudo, é uma boa prática não deixar pedaços de códigos jogados e "sem origem"; portanto, haverá a seguinte adição no código de `Account.cs`:
+```cs
+using System;
+// Remoção de using HellfireStore;
+
+namespace HellfireStore // Adição
+{
+    class Account
+    {
+        public Client Client; // Por estarem dentro do mesmo namespace, uma classe pode acessar a outra sem problemas.
+        public int Rents;
+        public DateTime Created_At;
+        public double? Discount;
+
+        public bool GetDiscount()
+        {
+            if (this.Rents < 6 || (this.Created_At.Month - DateTime.Now.Month) < 6)
+            {
+                return false;
+            }
+            else
+            {
+                this.Discount = 0.10;
+                return true;
+            }
+        }
+    }
+}
+```
+
+Entretanto, perceba, não há utilização em nenhum momento da classe `Guitars.cs`. Assim, como é possível criar os objetos "guitarra" dentro da conta ao invés de só informar quantas vezes o cliente alugou uma guitarra?
