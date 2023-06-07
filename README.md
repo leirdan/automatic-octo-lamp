@@ -452,7 +452,7 @@ namespace HellfireStore
         BOTH = 2
     }
 
-    class Guitars
+    class Guitar
     {
         private readonly int id;
         public string Model;
@@ -528,4 +528,91 @@ namespace HellfireStore // Adição
 }
 ```
 
-Entretanto, perceba, não há utilização em nenhum momento da classe `Guitars.cs`. Assim, como é possível criar os objetos "guitarra" dentro da conta ao invés de só informar quantas vezes o cliente alugou uma guitarra?
+Entretanto, perceba, não há utilização em nenhum momento da classe `Guitar.cs`. Assim, como é possível criar os objetos "guitarra" dentro da conta ao invés de só informar quantas vezes o cliente alugou uma guitarra?
+
+## 3. CONSTRUTORES
+Os métodos construtores de classes têm a função de ajudar o programador a construir um objeto de forma correta. Repare que os objetos estão sendo escritos assim:
+```cs
+Guitar strato = new Guitar();
+strato.Model = "Stratocaster";
+strato.Brand = "Fender";
+strato.PredominantMaterial = "Poplar";
+strato.HandOrientation = HandOrientation.LEFT; // ou 0
+strato.Price = 199.0;
+strato.Color = "Sonic Gray";
+``` 
+Isso é, de fato, um código grande para construir somente 1 objeto chamado *strato*. E se outros objetos precisassem ser criados, como um objeto *lespaul* ou *tele*? Há ainda outra forma de escrever um objeto ainda mais diretamente:
+```cs
+Guitar strato = new Guitar()
+{
+    Model = "Stratocaster",
+    Brand = "Fender",
+    HandOrientation = HandOrientation.LEFT, // ou 0
+    PredominantMaterial = "Poplar",
+    Price = 199.0,
+    Color = "Sonic Gray"
+};
+```
+Porém, o problema das linhas não é eliminado. E pior: o que se faz quando um desses atributos for esquecido (não é *se*, mas *quando*) e os dados ficarem com defeito ou até mesmo a aplicação quebrar?
+
+Para isso existe o método construtor. Implementado na classe e com o mesmo nome dela, é invocado na instrução `Guitar strato = new Guitar()` - precisamente no *Guitar()* - e necessita de parâmetros para criar o objeto, substuíndo as linhas acima. Aqui está o método construtor da classe Guitar:
+```cs
+class Guitar
+    {
+        private readonly int id;
+        public string Model;
+        public long ItemNumber;
+        public string Brand;
+        public string Color;
+        public string PredominantMaterial;
+        public HandOrientation HandOrientation;
+        public double Price;
+
+        // Construtor
+        public Guitar(int id, string Model, long ItemNumber, string Brand, string Color, string PredominantMaterial, HandOrientation handOrientation, double Price)
+        {
+            this.id = id;
+            this.Model = Model;
+            this.ItemNumber = ItemNumber;
+            this.Brand = Brand;
+            this.Color = Color;
+            this.Price = Price;
+            this.PredominantMaterial = PredominantMaterial;
+            this.HandOrientation = handOrientation;
+        }
+    }
+```
+> O que o construtor faz? Basicamente, ele diz que o atributo do objeto que está sendo instanciado (`this.Color`) recebe o valor que foi passado por parâmetro (`Color`).
+
+No código principal, ao invés da antiga declaração de uma guitarra, agora há essa:
+```cs
+Guitar strato = new Guitar(1, "Stratocaster", 02485132, "Fender", "Sonic Gray", "Poplar", HandOrientation.LEFT, 199.0)
+```
+Muito mais enxuto, sem dúvidas.
+
+Portanto, agora serão implementados os métodos construtores nas demais classes da seguinte maneira:
+
+*Album.cs*
+```cs
+public Album(string title, string description, string country, double weight, int quantity, double price, int? daysOfLastPurchase, double? discount)
+{
+    Title = title;
+    Description = description;
+    Country = country;
+    Weight = weight;
+    Quantity = quantity;
+    Price = price;
+    DaysOfLastPurchase = daysOfLastPurchase;
+    Discount = discount;
+}
+```
+*Client.cs*
+```cs
+public Client(int id, string name, string address, int boughtHowManyAlbums)
+{
+    this.id = id;
+    Name = name;
+    Address = address;
+    BoughtHowManyAlbums = boughtHowManyAlbums;
+}
+```
