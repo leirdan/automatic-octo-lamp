@@ -738,7 +738,104 @@ public string Address { get; set; }
 ```
 > O compilador, ao deparar-se com o ; após get/set, entende que não há nenhuma lógica envolvida e automaticamente cria, por baixo dos panos, um campo privado *_address* e os métodos `GetAddress()` e `SetAddress()`, que retornam e definem o valor de *_address*, respectivamente. Ou seja, é uma maneira de escrever um código bem mais simples que faz exatamente a mesma coisa que um código explícito.
 
+Devido a isso, é perfeitamente possível deletar o campo *_address*, ficando somente com o seguinte código em `Client.cs`, o qual funciona perfeitamente:
+```cs
+class Client
+{
+    public string Name;
+    public int BoughtHowManyAlbums;
+    public string Address { get; set; }
+    private int _id;
+    public int Id 
+    { 
+        get { return _id; } 
+        set 
+        { 
+            if (value <= 0) { return; };
+            _id = value; 
+        }
+    }
+    public Client(int id, string name, string address, int boughtHowManyAlbums)
+    {
+        Id = id;
+        Name = name;
+        Address = address;
+        BoughtHowManyAlbums = boughtHowManyAlbums;
+    }
+}
+```
+
 Esse é o uso dos getters e setters. Algumas de suas vantagens incluem:
 
 1. **Validação**: por meio dos setters, é possível fazer validações na própria classe, controlando melhor o estado de cada campo e concentrando a validação em um local só.
 2. **Encapsulamento**: getters e setters mantém uma maior segurança com os atributos da classe, impedindo que eles sejam acessados diretamente e modificados de maneiras indesejadas.
+
+## 5. ATRIBUTOS ESTÁTICOS
+
+Faça a seguinte pergunta: "será que este atributo que estou construindo deve ser pertencente ao objeto que será instanciado, ou à classe no geral?" Caso seu atributo atenda ao requisito da segunda pergunta, saiba que ele provavelmente deverá ser implementado na forma de *atributo estático*, ou seja, **que é acessado por todos os objetos e independentemente deles**. 
+
+Suponha que quero saber a quantidade de contas de clientes que existem na Hellfire Store. Para isso, é possível criar um atributo *accountsCreated* na classe `Account`:
+```cs
+public static int AccountsCreated { get; private set; }
+// getter é público, mas o setter não.
+```
+
+Após isso, é criado o construtor da classe (que não foi criado anteriormente por motivos de esquecimento):
+
+```cs
+public Account(Client client, DateTime created_At, double? discount, List<Guitar> guitarsRented)
+{
+    Client = client;
+    Created_At = created_At;
+    Discount = discount;
+    this.guitarsRented = guitarsRented;
+}
+```
+> O atributo *guitarsRented* só contém a palavra-chave `this` antes dele para diferenciá-lo do parâmetro; se seu nome tivesse sido definido como *GuitarsRented*, não haveria essa necessidade.
+
+Pense: como é possível fazer com que, a cada conta de cliente criada, o contador de contas aumente em 1?
+
+Resposta - dentro do construtor, insira:
+```cs
+public Account(Client client, DateTime created_At, double? discount, List<Guitar> guitarsRented)
+{
+    Client = client;
+    Created_At = created_At;
+    Discount = discount;
+    this.guitarsRented = guitarsRented;
+    
+    Account.AccountsCreated++;
+}
+```
+> "Por que não acessar o campo com `this`?" Porque `this` refere-se ao **objeto**, enquanto o atributo é estático e é referente à **classe**. Logo, a maneira certa de manipulá-lo é invocando a classe e incrementando diretamente.
+
+Voltando ao arquivo `Program.cs`. Que sejam criadas duas contas distintas e, ao final, seja impressa a quantidade de contas criadas:
+```cs
+static void Main(string[] args)
+{
+    var guitarsRented = new List<Guitar>
+    {
+        new Guitar(1, "Stratocaster", 02485132, "Fender", "Sonic Gray", "Poplar", HandOrientation.LEFT, 199.0),
+        new Guitar(2, "Les Paul", 2648502, "Michael", "Wine red", "Tília", HandOrientation.RIGHT, 300.0)
+    };
+    
+    Account nergal = new Account
+        (
+        new Client(1, "Adam 'Nergal' Michal Darski", "Ocean Boulevard", 14),
+        DateTime.Now,
+        0,
+        guitarsRented
+    );
+    
+    Account andy = new Account(
+        new Client(2, "Andrew 'Andy Leo' Rockhold", "Central Park", 6),
+        DateTime.Now,
+        0.10,
+        null
+    );
+    
+    Console.WriteLine(Account.AccountsCreated); // 2
+    
+    Console.ReadLine();
+}
+```
