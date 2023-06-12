@@ -610,7 +610,7 @@ public Album(string title, string description, string country, double weight, in
 ```cs
 public Client(int id, string name, string address, int boughtHowManyAlbums)
 {
-    this.id = id;
+    this._id = id; // Adicionado o campo id na classe Client
     Name = name;
     Address = address;
     BoughtHowManyAlbums = boughtHowManyAlbums;
@@ -656,3 +656,89 @@ foreach (var item in nergal.guitarsRented)
 }
 ``` 
 Modificações feitas com sucesso!
+
+## 4. ENCAPSULAMENTO COM GETTER E SETTER
+
+Perceba que em algumas classes há atributos com o modificador *protected* ou *private*. O mais notável agora é na classe `Client.cs`, onde existe um atributo *_id* privado e que não pode ser declarado diretamente no arquivo `Program.cs`. Por quê?
+
+No C#, existem alguns modificadores de acesso principais para as propriedades: **public**, onde todos os arquivos e instâncias de objeto dentro do projeto podem acessar a propriedade; **protected**, onde somente a própria classe e/ou classes herdadas podem acessar a propriedade de forma direta; e **private**, onde as propriedades são acessíveis somente na própria classe.
+
+Sendo assim, como o campo *_id* é privado, não é possível definir seu valor fora da classe. Como contornar este problema?
+
+Utilizando os métodos *get* e *set* dentro das propriedades. Mas para que servem?
+* get: retorna o valor do campo;
+* set: define o valor do campo.
+
+São métodos muito simples, mas extremamente poderosos. Então, como podemos definir o identificador para um cliente? Da seguinte forma:
+* Primeiro, atualize a construção do campo *Client* da classe `Account` no arquivo `Program.cs` para que o objeto seja construído usando o método construtor de *Client*:
+```cs
+nergal.Client = new Client(1, "Adam 'Nergal' Michal Darski", "Ocean Boulevard", 14);
+```
+* Na classe `Client`, defina o campo *_id* como *private int* e crie um novo campo *Id*:
+
+```cs
+private int _id;
+
+public int Id { }
+```
+> O campo Id será o responsável por acessar o campo privado *_id*. Note o underline, é uma convenção membros privados de classe iniciarem com este símbolo para diferenciá-los.
+*  Dentro do novo campo Id, insira as palavras reservadas **get** e **set**; note que elas funcionarão como métodos pois, após sua declaração, chaves devem ser colocadas e - dentro delas - algum código deve ser escrito.
+```cs
+private int _id;
+
+public int Id 
+{ 
+    // O método get do campo Id retorna o valor de _id, que é privado.
+    get 
+    {
+        return _id; 
+    } 
+    // O método set do campo Id define o valor de _id como o valor de 'value'.
+    set 
+    { 
+        _id = value; 
+    }
+}
+```
+> Quem é esse `value`? Essa palavra reservada do C# refere-se ao valor que é atribuído ao campo quando o objeto é instanciado, somente isso.
+
+* Entretanto, não quero que valores nulos e negativos sejam guardados no campo Id. Podemos fazer essa verificação da seguinte forma:
+```cs
+public int Id 
+{ 
+    get 
+    {
+        return _id; 
+    } 
+    set 
+    { 
+    // Se o valor passado for nulo ou negativo, não atribua-o ao campo Id.
+        if (value <= 0)
+        {  
+            return;
+        };
+        _id = value; 
+    }
+}
+```
+> Por serem métodos, get e set são popularmente denominados getters e setters, respectivamente.
+
+Assim, é possível manipular o valor do campo privado *_id*.
+Porém, caso não haja regras de validação, há uma maneira mais enxuta de escrever os getters e setters? Com toda certeza.
+
+Tome o campo *Address* da classe `Client`:
+* Faça com que ele seja um atributo protegido:
+```cs
+protected string _address;
+```
+
+* Em seguida, crie o campo público Address que contém o getter e o setter. No entanto, ao invés de escrever código após cada um dos métodos, insira um `;`, somente:
+```cs
+public string Address { get; set; }
+```
+> O compilador, ao deparar-se com o ; após get/set, entende que não há nenhuma lógica envolvida e automaticamente cria, por baixo dos panos, um campo privado *_address* e os métodos `GetAddress()` e `SetAddress()`, que retornam e definem o valor de *_address*, respectivamente. Ou seja, é uma maneira de escrever um código bem mais simples que faz exatamente a mesma coisa que um código explícito.
+
+Esse é o uso dos getters e setters. Algumas de suas vantagens incluem:
+
+1. **Validação**: por meio dos setters, é possível fazer validações na própria classe, controlando melhor o estado de cada campo e concentrando a validação em um local só.
+2. **Encapsulamento**: getters e setters mantém uma maior segurança com os atributos da classe, impedindo que eles sejam acessados diretamente e modificados de maneiras indesejadas.
