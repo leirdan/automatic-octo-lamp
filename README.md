@@ -616,3 +616,43 @@ public Client(int id, string name, string address, int boughtHowManyAlbums)
     BoughtHowManyAlbums = boughtHowManyAlbums;
 }
 ```
+
+Agora, voltando à pergunta do final do último tópico: como podemos, ao invés de adicionar apenas o número de guitarras que o cliente alugou, adicionar todas as informações das guitarras?
+
+Podemos realizar as seguintes refatorações:
+* Substituir o campo `rents` de `Account.cs` por uma lista de `Guitars`:
+```cs
+class Account
+    {
+        public Client Client;
+        public DateTime Created_At = DateTime.Now;
+        public double? Discount;
+        public List<Guitar> guitarsRented;
+        // método getDiscount()
+    }
+```
+> O campo `guitarsRented`, como perceptível, é de um tipo chamado "List<Guitar>". O que isso significa? Simples: esse campo guarda múltiplos valores (uma lista), todos do tipo "Guitar"; ou seja, tal campo guarda vários objetos "guitarra".
+
+* Em `Program.cs`, ao invés de declarar a quantidade do campo `Rents`, criar uma lista de guitarras e passá-la como valor para o campo `guitarsRented`.
+```cs
+List<Guitar> guitars = new List<Guitar>
+{
+    new Guitar(1, "Stratocaster", 02485132, "Fender", "Sonic Gray", "Poplar", HandOrientation.LEFT, 199.0),
+    new Guitar(2, "Les Paul", 2648502, "Michael", "Wine red", "Tília", HandOrientation.RIGHT, 300.0)
+};
+
+nergal.guitarsRented = guitars;
+```
+
+* Caso queiramos verificar se os objetos estão sendo armazenados no campo "guitarsRented", podemos fazer um loop *for-each* e escrever, por exemplo, o modelo da guitarra.
+```cs
+foreach (var item in nergal.guitarsRented)
+{
+    Console.WriteLine(item.Model);
+    /*  SAÍDA
+    *   Stratocaster
+    *   Les Paul
+    */
+}
+``` 
+Modificações feitas com sucesso!
