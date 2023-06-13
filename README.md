@@ -839,3 +839,127 @@ static void Main(string[] args)
     Console.ReadLine();
 }
 ```
+
+## 6. HERANÇA
+Uma das partes mais fundamentais da POO, tal mecanismo permite que classes compartilhem atributos, métodos e demais atributos entre si, conectando as classes e reduzindo possíveis códigos repetidos.
+
+A partir de agora, foi criada uma pasta chamada *Employees* e um arquivo de nome `Employee.cs` com a seguinte configuração:
+```cs
+using System;
+
+namespace HellfireStore.Employees
+{
+    class Employee
+    {
+        private int _id;
+        public string Name { get; set; }
+        public string CPF { get; set; }
+
+        public int ID
+        {
+            get
+            {
+                return _id;
+            }
+            set
+            {
+                if (value <= 0)
+                {
+                    return;
+                };
+                _id = value;
+            }
+        }
+
+        public double Wage { get; set; }
+
+        public double GetBonus () { return Wage * 0.10; }
+
+        public Employee(string name, string cpf, int id, double wage)
+        {
+            Name = name;
+            CPF = cpf;
+            ID = id;
+            Wage = wage;
+        }
+    }
+}
+```
+
+Repare no método `GetBonus()`: ele define uma bonificação fixa para todos os funcionários. Mas e se existirem funcionários que receberão bônus menores ou maiores que outros? A solução mais óbvia seria montar um `if-else` para verificar cada caso e realizar operações com valores diferentes. Entretanto, isso não é nada prático e é extremamente manual. Outra solução seria criar classes diferentes para cada tipo de funcionário; essa é uma abordagem que pode funcionar.
+
+A "sorte" é que no C# (e em todas as outras linguagens com paradigma orientado a objetos) existe um mecanismo que permite relacionar classes que têm características em comum, mas tão em comum que é como se uma dependesse da outra. Denomina-se esse mecanismo de **Herança**.
+
+Seja a classe `Manager`:
+```cs
+class Manager
+{
+    private int _id;
+    public string Name { get; set; }
+    public string CPF { get; set; }
+
+    public int ID
+    {
+        get
+        {
+            return _id;
+        }
+        set
+        {
+            if (value <= 0)
+            {
+                return;
+            };
+            _id = value;
+        }
+    }
+    public double Wage { get; set; }
+    
+    public double GetBonus() { return Wage * 0.10; }
+}
+```
+
+Perceba que ela é idêntica à classe `Employee`, mas não é do mesmo tipo (Manager ≠ Employee) apesar de ser idêntica. Para que não haja a necessidade de escrever tudo isso, é possível utilizar o mecanismo da herança inserindo ` : ` no nome da classe:
+```cs 
+class Manager : Employee
+{
+    public Manager(string name, string cpf, int id, double wage) : base(name, cpf, id, wage)
+    {
+    }
+    public double GetBonus() { return Wage * 0.10; }
+}
+```
+> Em `class Manager : Employee`, é dito que a classe `Manager` herda tudo da classe `Employee`. Para melhor visualização, pense que `Employee` é a classe-pai e `Manager` sua classe-filha, e que o ` : ` significa, na verdade, `extends`. No construtor de `Manager` há também um `:` seguido da palavra `base`; tal palavra no construtor diz ao programa que o construtor a ser executado será o da classe-pai (até porque ambas as classes têm os mesmos atributos).
+ 
+Simultaneamente, é criada uma classe fora de *Employees* de nome `BonusesManagement`, responsável por controlar e calcular o total que será gasto com as bonificações dos funcionários na Hellfire Store:
+```cs
+class BonusesManagement
+{
+    private double _total;
+    
+    public double InsertBonus (Employee employee) {
+        _total += employee.GetBonus();
+        return _total;
+    }
+} 
+```
+
+Em `Program.cs`, foram criados dois funcionários e, em seguida, executado o método que calcula o total da bonificação dos dois funcionários:
+
+```cs
+Manager dio = new Manager("Ronnie James Dio", "032-412-666-09", 1, 6666.00);
+Console.WriteLine(dio.Name); // Ronnie James Dio
+Console.WriteLine(dio.GetBonus()); // 1999,8
+
+var roger = new Employee("Roger Waters", "492-958-019-57", 2, 2542.00);
+Console.WriteLine(roger.Name); // Roger Waters 
+Console.WriteLine(roger.GetBonus()); // 254,2
+
+var ctrl = new BonusesManagement();
+ctrl.InsertBonus(roger);
+ctrl.InsertBonus(dio);
+
+Console.WriteLine("Total de bônus: " + ctrl.Total); // 1999,8 + 254,2 = 920,8!... espera, há algo errado aqui.
+```
+
+Como comentado no código, perceba que há um erro na soma dos bônus. Note que o valor que está sendo somado a 254,2 não é 1999,8 como deveria ser, mas sim, 920,8 - 254,2 = 666,6! De onde está saindo esse valor?
