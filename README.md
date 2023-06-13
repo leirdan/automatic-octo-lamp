@@ -963,3 +963,25 @@ Console.WriteLine("Total de bônus: " + ctrl.Total); // 1999,8 + 254,2 = 920,8!.
 ```
 
 Como comentado no código, perceba que há um erro na soma dos bônus. Note que o valor que está sendo somado a 254,2 não é 1999,8 como deveria ser, mas sim, 920,8 - 254,2 = 666,6! De onde está saindo esse valor?
+
+## 7. POLIMORFISMO
+
+Perceba que 666,6 é 10% de 6666.00, ou seja, 10% do salário do gerente Dio. Logo, já é possível detectar que o problema provavelmente está na classe `Manager`. Olhando para ela e a classe `Employee`, note que ambas têm o mesmo método *GetBonus()*! Então, é fácil imaginar que pela classe `Manager` herdar a classe `Employee` ela está executando o método da classe-pai (com os 10%) e não o seu próprio método!
+
+Para fazer a classe `Manager` executar seu próprio método, o que deve ser feito é:
+
+* Definir o método *GetBonus()* de `Employee` como *virtual*:
+```cs
+public virtual double GetBonus () { return Wage * 0.10; }
+```
+> Quando o método é marcado como *virtual*, significa que é possível **sobrescrevê-lo** nas classes que herdam a classe-pai.
+
+* Informar que o método *GetBonus()* de `Manager` sobrescreverá o método-pai com a palavra *override*:
+```cs
+public override double GetBonus() { return Wage * 0.30; }
+```
+
+Ao executar novamente o projeto após essas alterações, o valor total do bônus é 2254 (1999,8 + 254,2). A este processo que acabou de ser feito (alteração de comportamento entre classes diferentes com o mesmo nome) é denominado **Polimorfismo**.
+> Curiosidade: é possível haver sobrescrita de membros de classe! Mas não de qualquer membro, somente de propriedades que contém *getters* e *setters*, pois estes são métodos e podem ser reescritos, enquanto atributos não podem.
+
+> Curiosidade 02: a palavra-chave `base` pode ser utilizada também em contextos de sobrescrita de métodos com o mesmo nome. Por exemplo, imagine que no método *GetBonus()* de `Manager`, ele queira executar o mesmo método mas de `Employee` para somar com o seu próprio cálculo; para isso, seria utilizado a palavra `base`, como em: `public override double GetBonus() { return Wage * 0.30 + base.GetBonus(); }`.
