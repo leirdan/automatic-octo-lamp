@@ -951,7 +951,7 @@ Manager dio = new Manager("Ronnie James Dio", "032-412-666-09", 1, 6666.00);
 Console.WriteLine(dio.Name); // Ronnie James Dio
 Console.WriteLine(dio.GetBonus()); // 1999,8
 
-var roger = new Employee("Roger Waters", "492-958-019-57", 2, 2542.00);
+Employee roger = new Employee("Roger Waters", "492-958-019-57", 2, 2542.00);
 Console.WriteLine(roger.Name); // Roger Waters 
 Console.WriteLine(roger.GetBonus()); // 254,2
 
@@ -982,6 +982,170 @@ public override double GetBonus() { return Wage * 0.30; }
 ```
 
 Ao executar novamente o projeto após essas alterações, o valor total do bônus é 2254 (1999,8 + 254,2). A este processo que acabou de ser feito (alteração de comportamento entre classes diferentes com o mesmo nome) é denominado **Polimorfismo**.
-> Curiosidade: é possível haver sobrescrita de membros de classe! Mas não de qualquer membro, somente de propriedades que contém *getters* e *setters*, pois estes são métodos e podem ser reescritos, enquanto atributos não podem.
-
+> Curiosidade 01: é possível haver sobrescrita de membros de classe! Mas não de qualquer membro, somente de propriedades que contém *getters* e *setters*, pois estes são métodos e podem ser reescritos, enquanto atributos não podem.
 > Curiosidade 02: a palavra-chave `base` pode ser utilizada também em contextos de sobrescrita de métodos com o mesmo nome. Por exemplo, imagine que no método *GetBonus()* de `Manager`, ele queira executar o mesmo método mas de `Employee` para somar com o seu próprio cálculo; para isso, seria utilizado a palavra `base`, como em: `public override double GetBonus() { return Wage * 0.30 + base.GetBonus(); }`.
+
+## 8. ABSTRAÇÃO
+
+Após algumas adições, essas são as classes criadas na pasta "Employees" até o momento:
+
+*Designer.cs*:
+```cs
+namespace HellfireStore.Employees
+{
+    class Designer : Employee
+    {
+        public Designer(string name, string cpf, int id, double wage) : base (name, cpf, id, wage)
+        {
+        }
+
+        public override double GetBonus()
+        {
+            return Wage * 0.15;
+        }
+        public override void IncreaseWage()
+        {
+            Wage *= 1.15;
+        }
+    }
+}
+```
+
+*Dev.cs*:
+```cs
+namespace HellfireStore.Employees
+{
+   class Dev : Employee
+   {
+        public Dev(string name, string cpf, int id, double wage) : base(name, cpf, id, wage)
+        {
+        }
+
+        public override double GetBonus()
+        {
+            return Wage * 0.25;
+        }
+
+        public override void IncreaseWage()
+        {
+            Wage *= 1.25;
+        }
+    }
+}
+```
+
+*Employee.cs*:
+```cs
+namespace HellfireStore.Employees
+{
+    class Employee
+    {
+        private int _id;
+        public string Name { get; set; }
+        public string CPF { get; private set; }
+
+        public int ID
+        {
+            get
+            {
+                return _id;
+            }
+            private set
+            {
+                if (value <= 0)
+                {
+                    return;
+                };
+                _id = value;
+            }
+        }
+
+        public double Wage { get; protected set; }
+
+        public virtual void IncreaseWage ()
+        {
+            Wage *= 1.10;
+        }
+
+        public virtual double GetBonus () { return Wage * 0.10; }
+
+        public Employee(string name, string cpf, int id, double wage)
+        {
+            Name = name;
+            CPF = cpf;
+            ID = id;
+            Wage = wage;
+        }
+    }
+}
+```
+
+*Manager.cs*:
+
+```cs
+namespace HellfireStore.Employees
+{
+    class Manager : Employee
+    {
+        public Manager(string name, string cpf, int id, double wage) : base(name, cpf, id, wage)
+        {
+        }
+
+        public override double GetBonus() { return Wage * 0.30; }
+
+        public override void IncreaseWage()
+        {
+            Wage *= 1.50;
+        }
+    }
+}
+```
+
+Note que a classe `Employee` está sendo usada como base para cada uma das outras classes, estas que contém suas próprias lógicas e sobrescrevem sempre os métodos padrão da classe-pai. Assim, não faz mais sentido criar um funcionário diretamente, pois ele é uma abstração para outras classes. Então, é possível tornar esta classe **abstrata**, o que significa que só será usada como modelo para outras classes e nunca poderá ser instanciada diretamente na forma de um objeto.
+
+Entretanto, este modelo não será obrigatório a ser seguido. O que parece um ponto positivo pode ser negativo, já que ao criar uma nova classe que herda de uma classe abstrata, seus membros não serão obrigatoriamente herdados para serem modificados, o que pode fazer o desenvolvedor esquecer de todos os membros e gerar comportamentos inesperados.
+
+Para não haver este problema, torne também os métodos abstratos; estes métodos não podem ter um corpo, sendo escritos como um atributo mas com "()" no fim. Assim, estes métodos deverão sempre ser implementados nas classes derivadas da classe-pai.
+> Saiba que métodos abstratos só podem existir dentro de classes abstratas, mas uma classe abstrata pode conter um ou mais métodos concretos.
+
+Após estas modificações, é este o código presente na classe `Employee`:
+```cs
+abstract class Employee
+    {
+        private int _id;
+        public string Name { get; set; }
+        public string CPF { get; private set; }
+
+        public int ID
+        {
+            get
+            {
+                return _id;
+            }
+            private set
+            {
+                if (value <= 0)
+                {
+                    return;
+                };
+                _id = value;
+            }
+        }
+
+        public double Wage { get; protected set; }
+		
+		public Employee(string name, string cpf, int id, double wage)
+        {
+            Name = name;
+            CPF = cpf;
+            ID = id;
+            Wage = wage;
+        }
+		
+	// Métodos abstratos
+	
+        public abstract void IncreaseWage();
+
+        public abstract double GetBonus();
+    }
+```
