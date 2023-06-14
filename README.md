@@ -774,7 +774,7 @@ Esse é o uso dos getters e setters. Algumas de suas vantagens incluem:
 
 Faça a seguinte pergunta: "será que este atributo que estou construindo deve ser pertencente ao objeto que será instanciado, ou à classe no geral?" Caso seu atributo atenda ao requisito da segunda pergunta, saiba que ele provavelmente deverá ser implementado na forma de *atributo estático*, ou seja, **que é acessado por todos os objetos e independentemente deles**. 
 
-Suponha que quero saber a quantidade de contas de clientes que existem na Hellfire Store. Para isso, é possível criar um atributo *accountsCreated* na classe `Account`:
+Suponha que quero saber a quantidade de contas de clientes que existem na loja Hellfire. Para isso, é possível criar um atributo *accountsCreated* na classe `Account`:
 ```cs
 public static int AccountsCreated { get; private set; }
 // getter é público, mas o setter não.
@@ -931,7 +931,7 @@ class Manager : Employee
 ```
 > Em `class Manager : Employee`, é dito que a classe `Manager` herda tudo da classe `Employee`. Para melhor visualização, pense que `Employee` é a classe-pai e `Manager` sua classe-filha, e que o ` : ` significa, na verdade, `extends`. No construtor de `Manager` há também um `:` seguido da palavra `base`; tal palavra no construtor diz ao programa que o construtor a ser executado será o da classe-pai (até porque ambas as classes têm os mesmos atributos).
  
-Simultaneamente, é criada uma classe fora de *Employees* de nome `BonusesManagement`, responsável por controlar e calcular o total que será gasto com as bonificações dos funcionários na Hellfire Store:
+Simultaneamente, é criada uma classe fora de *Employees* de nome `BonusesManagement`, responsável por controlar e calcular o total que será gasto com as bonificações dos funcionários na loja Hellfire:
 ```cs
 class BonusesManagement
 {
@@ -1277,3 +1277,152 @@ internal class Program
 ```
 
 Assim, o programa perguntará alguns dados de quem está tentando entrar, irá comparar com uma senha armazenada e informar se ele pode entrar ou não (com base no método *Authenticate()*).
+
+## 10. INTERFACES 
+Interfaces são semelhantes a classes abstratas com somente métodos abstratos, com a diferença de que seus métodos não podem ter implementações e nem modificadores de acesso. A interface é como um **modelo** para uma classe, indicando os seus componentes obrigatórios mas que não conflita com outras heranças pelo fato de **não ter implementação**, somente uma indicação.
+
+Aplicando tal conceito na situação da loja Hellfire, surge uma nova necessidade: a loja mantém relações com um fornecedor/parceiro comercial, que deve ter acesso ao sistema interno da Hellfire. A maneira mais fácil seria, obviamente, criar uma classe `Supplier` e criar uma relação de herança com `AuthController`, que tem relação com `Employee`; no entanto, o fornecedor *não é* um funcionário, então não cabe atribuir características como "aumentar salário" e "pegar bonificações" a ele. Como prosseguir?
+
+Poderia ser criada a classe, ainda assim, e nela atribuir a herança a `AuthController`, simultaneamente removendo a herança de `Employee` em `AuthController`; para o aplicativo continuar dando acesso ao gerente e desenvolvedor seria necessário, portanto, inserir os seguintes códigos nestas classes:
+
+```cs
+class Manager : AuthController, Employee
+class Dev : AuthController, Employee
+```
+
+Esta é uma forma mais pura de declarar uma herança múltipla, pois ``Dev`` simultaneamente herda de ``AuthController`` e `Employee`; contudo, isso não é admitido pelo C# como forma de prevenção de erros!
+
+A alternativa frente a essa limitação seria, desse modo, criar uma interface. Como seria feito esse processo de refatoração de código?
+
+1. Em `AuthController.cs` é apagado todo o corpo da classe, e ela deixará de ser uma `abstract class` para ser uma `interface`, somente com um método booleano *Authenticate(string passwd)* dentro dela:
+```cs
+interface IAuthController
+    {
+        // Todos os métodos e atributos dentro de uma interface são públicos
+        bool Authenticate(string passwd);
+    }
+```
+
+2. Sendo ``Employee`` uma classe abstrata e ``IAuthController`` uma interface, é criado um arquivo chamado `AuthenticableEmployee.cs` na pasta de "Employees" com uma classe de mesmo nome. Tal classe é abstrata, herda ``Employee`` e implementa ``IAuthController``, logo, tem o seguinte código:
+
+```cs
+using CSharpWithPOO.MIS;
+using HellfireStore.Employees;
+
+namespace CSharpWithPOO.Employees
+{
+    abstract class AuthenticableEmployee : Employee, IAuthController
+    {
+        // A classe base é Employee
+        protected AuthenticableEmployee(string name, string cpf, int id, double wage) : base(name, cpf, id, wage)
+        {
+        }
+
+        public string Passwd { protected get; set; }
+
+        public bool Authenticate(string passwd)
+        {
+            return Passwd == passwd;
+        }
+    }
+}
+```
+
+3. Agora, são trocadas nas classes `Manager` e ``Dev`` suas implementações: agora elas herdam somente a classe abstrata `AuthenticableEmployee` (que, por não ter métodos abstratos, somente concretos, não precisam ser implementados obrigatoriamente):
+```cs
+class Manager : AuthenticableEmployee
+class Dev : AuthenticableEmployee
+```
+
+4. Também é criada a classe `Supplier` na pasta "MIS", com o seguinte código:
+```cs
+namespace CSharpWithPOO.MIS
+{
+    class Supplier : IAuthController
+    {
+        public string Passwd { protected get; set; }
+
+        public bool Authenticate(string passwd)
+        {
+            return this.Passwd == passwd;
+        }
+    }
+}
+```
+> Ou seja, um fornecedor não é um funcionário e não herda a classe `AuthenticableEmployee`, mas implementa uma de suas interfaces, a `IAuthController`, o que lhe garante o comportamento de poder entrar no sistema interno da Hellfire.
+
+5. Por fim, basta apenas alterar o argumento da função *EnterSystem()* do tipo `AuthController` para `IAuthController`:
+```cs
+static void EnterSystem(IAuthController em, string p)
+    {
+        App.Authenticate(em, p);
+    }
+```
+
+No arquivo `Program.cs`, há o seguinte código final:
+```cs
+using HellfireStore.Employees;
+using HellfireStore.MIS;
+
+internal class Program
+{
+    static void EnterSystem(IAuthController em, string p)
+    {
+        App.Authenticate(em, p);
+    }
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Quem está tentando entrar? 1 - Dev, 2 - Manager, 3 - Supplier");
+        int opc = Convert.ToInt32(Console.ReadLine());
+        
+        if (opc == 1)
+        {
+            Console.WriteLine("Insira os seus dados!");
+            Console.WriteLine("CPF: ");
+            var cpf = Console.ReadLine();
+            Console.WriteLine("Nome: ");
+            var name = Console.ReadLine();
+
+            Dev dev = new Dev(name, cpf, 0, 0)
+            {
+                Passwd = "temp123"
+            };
+            Console.WriteLine("Digite a senha: ");
+            string p = Console.ReadLine();
+            EnterSystem(dev, p);
+        }
+        else if (opc == 2)
+        {
+            Console.WriteLine("Insira os seus dados!");
+            Console.WriteLine("CPF: ");
+            var cpf = Console.ReadLine();
+            Console.WriteLine("Nome: ");
+            var name = Console.ReadLine();
+
+            Manager man = new Manager(name, cpf, 0, 0)
+            {
+                Passwd = "temp123"
+            };
+            Console.WriteLine("Digite a senha: ");
+            string p = Console.ReadLine();
+            EnterSystem(man, p);
+        }
+        else if (opc == 3)
+        {
+            Supplier sup = new Supplier()
+            {
+                Passwd = "temp123"
+            };
+            Console.WriteLine("Digite a senha: ");
+            string p = Console.ReadLine();
+            EnterSystem(sup, p);
+        }
+        else
+        {
+            Console.WriteLine("Tal opção não existe!");
+        }
+        Console.ReadLine();
+    }
+}
+```
+Portanto, o aplicativo continua funcionando e agora os usuários que são fornecedores também podem acessar o sistema!
