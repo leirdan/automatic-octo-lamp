@@ -1149,3 +1149,131 @@ abstract class Employee
         public abstract double GetBonus();
     }
 ```
+
+## 9. HERANÇA MÚLTIPLA
+
+Existe a seguinte situação na loja Hellfire: qualquer um pode logar no seu sistema, funcionário ou não, e ter acesso às informações. Por isso, é necessária a criação de um sistema de autenticação para permitir que somente funcionários autorizados (**diretor e desenvolvedor**) possam acessar as informações.
+
+Primeiro, é criada a pasta "MIS" (*management information system*, do inglês) e nela o arquivo `App.cs`. Em seguida, é necessário implementar a lógica da autenticação do usuário. Ela será feita em algumas partes:
+
+1. No arquivo `App.cs`, será criado um método público que retorna um valor *booleano* chamado **Authenticate()**. Tal método recebe como parâmetros os dados do usuário que está tentando entrar e a senha que ele digitou. Dentro do método, será executado um método na classe `AuthController` para comparar a senha digitada com a armazenada; se forem iguais, retorna *true* para o `App`; se não, retorna *false*. Ao fim, o `App` verifica o valor do retorno e, a depender, autoriza ou não o acesso. Esse é o código gerado:
+
+```cs
+using CSharpWithPOO.MIS;
+using System;
+
+namespace HellfireStore.MIS
+{
+    class App
+    {
+        public static bool Authenticate(AuthController auth, string passwd)
+        {
+            bool isAuth = auth.Verify(passwd);
+            if (isAuth)
+            {
+                Console.WriteLine("Authenticated!");
+                return true;
+            }
+            else
+            {
+                Console.WriteLine("Wrong password.");
+                return false;
+            }
+        }
+
+    }
+}
+```
+
+2. Agora, é necessário implementar a classe `AuthController`. Ela terá as seguintes características: herdará as características de `Employee`; terá um atributo adicional chamado "senha"; e um método de verificação para comparar a senha fornecida com a senha do objeto criado. Esse será o seu código:
+```cs
+using HellfireStore.Employees;
+
+namespace CSharpWithPOO.MIS
+{
+    abstract class AuthController : Employee
+    {
+        protected AuthController(string name, string cpf, int id, double wage) : base(name, cpf, id, wage)
+        {
+        }
+        private readonly string _passwd;
+        public string Passwd { protected get; set; }
+
+        public bool Verify(string passwd)
+        {
+            return this.Passwd == passwd;
+        }
+    }
+}
+```
+> Note que ela é uma classe abstrata. Por quê? Simples, se ela não o fosse, precisaria implementar os métodos *IncreaseWage()* e *GetBonus()* de `Employee`, o que não é sua responsabilidade; então, sendo abstrata, ela não precisa implementar estes métodos.
+
+3. Como apenas os gerentes e desenvolvedores devem ter acesso a esse sistema interno da Hellfire, alguma alteração deve ser feita para que outros funcionários não tenham sequer o atributo da senha para autenticar-se... A resposta está justamente na herança das classes `Dev` e `Manager`! Se elas herdarem, ao invés de `Employee`, a classe abstrata `AuthController` elas terão um atributo de senha e o método necessário para realizar a verificação de senhas:
+
+```cs
+class Dev : AuthController
+class Manager : AuthController
+```
+> Perceba que elas não perdem o restante de suas características herdadas de `Employee`; isso se dá graças à **Herança Múltipla**, onde uma classe (Dev) pode herdar de outra (AuthController) que já herda de uma primeira (Employee)! É como uma transmissão de características ao longo das gerações.
+
+4. Ao fim, em `Program.cs`, é criado um método para entrar no sistema de fato e exibir a mensagem esperada, além de alguns testes.
+
+```cs
+using System;
+using CSharpWithPOO.MIS;
+using HellfireStore.Employees;
+using HellfireStore.MIS;
+
+internal class Program
+{
+    static void EnterSystem(AuthController em, string p)
+    {
+        App.Authenticate(em, p);
+    }
+    static void Main(string[] args)
+    {
+        Console.WriteLine("Quem está tentando entrar? 1 - Dev, 2 - Manager");
+        int opc = Convert.ToInt32(Console.ReadLine());
+        
+        if (opc == 1)
+        {
+            Console.WriteLine("Insira os seus dados!");
+            Console.WriteLine("CPF: ");
+            var cpf = Console.ReadLine();
+            Console.WriteLine("Nome: ");
+            var name = Console.ReadLine();
+
+            Dev dev = new Dev(name, cpf, 0, 0)
+            {
+                Passwd = "temp123"
+            };
+            Console.WriteLine("Digite a senha: ");
+            string p = Console.ReadLine();
+            EnterSystem(dev, p);
+        }
+        else if (opc == 2)
+        {
+            Console.WriteLine("Insira os seus dados!");
+            Console.WriteLine("CPF: ");
+            var cpf = Console.ReadLine();
+            Console.WriteLine("Nome: ");
+            var name = Console.ReadLine();
+
+            Manager man = new Manager(name, cpf, 0, 0)
+            {
+                Passwd = "temp123"
+            };
+            Console.WriteLine("Digite a senha: ");
+            string p = Console.ReadLine();
+            EnterSystem(man, p);
+        }
+        else
+        {
+            Console.WriteLine("Tal opção não existe!");
+        }
+        Console.ReadLine();
+    }
+}
+```
+
+Assim, o programa perguntará alguns dados de quem está tentando entrar, irá comparar com uma senha armazenada e informar se ele pode entrar ou não (com base no método *Authenticate()*).
