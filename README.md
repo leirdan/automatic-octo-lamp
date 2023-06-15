@@ -1426,3 +1426,162 @@ internal class Program
 }
 ```
 Portanto, o aplicativo continua funcionando e agora os usuários que são fornecedores também podem acessar o sistema!
+
+# EXCEÇÕES EM C#  
+
+Nesta seção serão apresentadas a teoria e aplicação das **exceções** e **tratamento de exceções** com base no projeto da Hellfire Store desenvolvido até aqui.
+
+## 1. TRY-CATCH
+Veja o seguinte código no arquivo `Program.cs`:
+```sql
+static void Main(string[] args)
+    {
+        Console.WriteLine("Insira os dados do álbum: ");
+        Console.Write("Título:");
+        var title = Console.ReadLine();
+        Console.Write("Descrição:");
+        var description = Console.ReadLine();
+        Console.Write("Origem:");
+        var country = Console.ReadLine();
+        Console.Write("Peso:");
+        var weight = Convert.ToDouble(Console.ReadLine());
+        Console.Write("Quantidade em estoque:");
+        var quantity = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Preço:");
+        var price = Convert.ToDouble(Console.ReadLine());
+        Console.Write("Dias da última compra:");
+        var daysLastPurchase = Convert.ToInt32(Console.ReadLine());
+        Console.Write("Desconto:");
+        var discount = Convert.ToDouble(Console.ReadLine());
+
+        var album = new Album(
+            title, description, country, weight, quantity, price, daysLastPurchase, discount
+        );
+        Console.WriteLine(album.Title);
+        Console.WriteLine(album.Quantity);
+        Console.ReadLine();
+    }
+```
+
+Aqui está sendo criado um novo álbum passo a passo, onde o programa pergunta o valor de um determinado campo e o usuário o digita. Entretanto, e se o usuário inserir um valor que não corresponde ao tipo esperado pelo campo, como uma *string* ao invés de um número? O compilador lançará um erro dessa forma, chamado de `System.FormatException`, informando que o valor digitado não está no tipo correto; a isso é denominado *exceção*, que, neste caso, fará o programa parar por inteiro, pois ele não esperava um erro deste tipo.
+
+Para se prevenir e realizar o tratamento desse possível erro, é possível utilizar o chamado bloco **try-catch-finally**; no trecho do `try` vai o código principal a ser executado e que pode conter um possível erro por parte do usuário; no trecho do(s) `catch`(s) é feito o tratamento de cada um dos erros previsíveis; e no `finally` (opcional) vai o código que será executado de qualquer forma ao fim do programa (por exemplo, fechar a instância do banco de dados). Aplicando ao código existente, pode haver algo como:
+
+```cs
+	try
+    {
+		Console.WriteLine("Insira os dados do álbum: ");
+		// Código
+    } 
+    catch (FormatException)
+    {
+        Console.WriteLine("O formato do dado que você inseriu está incorreto..");
+    }
+    Console.ReadLine();
+```
+> Não há bloco `finally` neste caso, mas o programa é executado normalmente.
+
+Repare que as exceções são também classes; isso significa que é possível criar objetos a partir destas classes e acessar suas propriedades, como:
+> Seja *e* uma exceção padrão.
+- *e.Message*: exibe uma mensagem do próprio compilador que descreve a atual exceção;
+- *e.StackTrace*: informa a pilha de chamadas por onde passou o erro desde sua aparição até ele ser tratado;
+- *e.HelpLink*: define ou exibe um link de ajuda para um arquivo relacionado à exceção.
+
+Além disso, todas as exceções (*NullReferenceException*, *DivideByZeroException*, *SystemException*, etc.) descendem de uma primeira classe, chamada de **Exception**, a qual implementa duas interfaces: *ISerializable* e *_Exception*. Assim, várias exceções de tipos diferentes que têm tratamentos similares podem ser tratadas da mesma forma se a exceção for definida como do tipo `Exception`; para casos onde o desenvolvedor deseja tratar de forma diferente das outras uma exceção, convém utilizar alguma das classes-filhas de `Exception`.
+
+### 1.1 PALAVRA-CHAVE THROW
+
+Ainda dentro da classe `Program`, considere os métodos:
+
+```cs
+
+static void Main(string[] args)
+    {
+        try
+        {
+            Console.Write("welcome to coffee situation! insert your level of coffee (0 - empty; 1 - full):");
+            int coffee = Convert.ToInt32(Console.ReadLine());
+            string situation = CoffeeSituation(coffee);
+            Console.WriteLine(situation);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        Console.ReadLine();
+    }
+
+static string CoffeeSituation(int s)
+    {
+        try
+        {
+            if (s == 0)
+            {
+                return "fill";
+            }
+            else if (s == 1)
+            {
+                return "drink";
+            }
+            else
+            {
+                return "it's okay";
+            }
+        }
+        catch (FormatException e)
+        {
+            Console.WriteLine(e.Message);
+        }
+    }
+```
+
+O compilador acusa um erro! Mas por que isso acontece? Note que o método é do tipo `string`, logo, espera um retorno em forma de texto, o que não ocorre no bloco `catch` que executa um código próprio. Para sumir com esse erro, é necessário que o bloco retorne algo também; esse retorno pode ser indicado pela palavra-chave `throw`, própria para tratamento de exceções, que indica que *a exceção que ocorrer durante a execução desse método deverá ser tratada pelo método que a chamou*. Então, para tratar de fato as exceções geradas, adicione o bloco `try-catch` também no método *Main()*:
+
+```cs
+	static void Main(string[] args)
+    {
+        try
+        {
+            Console.Write("welcome to coffee situation! insert your level of coffee (0 - empty; 1 - full): ");
+            int coffee = Convert.ToInt32(Console.ReadLine());
+            string situation = CoffeeSituation(coffee);
+            Console.WriteLine(situation);
+        }
+		// tratamento da exceção lançada pelo método "CoffeeSituation"
+        catch (FormatException)
+        {
+            Console.WriteLine("you need to insert a INTEGER NUMBER!");
+        }
+		// se houver exceções de tipos que não estão sendo tratados nos outros catchs, essas exceções cairão nesse bloco generalista
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+        }
+        Console.ReadLine();
+    }
+
+    static string CoffeeSituation(int s)
+    {
+        try
+        {
+            if (s == 0)
+            {
+                return "fill";
+            }
+            else if (s == 1)
+            {
+                return "drink";
+            }
+            else
+            {
+                return "it's okay";
+            }
+        }
+        catch (FormatException)
+        {
+			// lança a exceção não tratada para o método que o chamou
+            throw;
+        }
+    }
+}
+```
