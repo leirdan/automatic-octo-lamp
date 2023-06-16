@@ -1477,9 +1477,12 @@ Para se prevenir e realizar o tratamento desse possível erro, é possível util
     {
         Console.WriteLine("O formato do dado que você inseriu está incorreto..");
     }
+	finally 
+	{
+		Console.WriteLine("Fim do programa");
+	}
     Console.ReadLine();
 ```
-> Não há bloco `finally` neste caso, mas o programa é executado normalmente.
 
 Repare que as exceções são também classes; isso significa que é possível criar objetos a partir destas classes e acessar suas propriedades, como:
 > Seja *e* uma exceção padrão.
@@ -1764,6 +1767,7 @@ public void SellRecord(int qtd)
         throw new InsufficientRecordsException("the store doesn't have the necessary number of records needed to make the sale!");
     }
 }
+
 ```
 Tratamento em `Program.cs`:
 ```cs
@@ -1778,4 +1782,15 @@ catch (InsufficientRecordsException e)
     Console.WriteLine(e.Message);
 }
 Console.ReadLine();
-```
+``` 
+
+## 4. STACKTRACE
+
+Como já mencionado anteriormente de forma superficial, o *stack trace* é um rastreamento da pilha de chamadas das funções do programa, e é fundamental para análise posterior de um erro. Quando um método gera uma exceção, tal erro será propagado por todo o programa até encontrar algum método que esteja preparado para lidar com ele; assim, ele deixa um rastro de por onde reverberou, o que permite identificar sua origem e caminho! 
+
+Suponha 3 funções: A, B e C. C é executada por B e esta é executada por A. Então, se uma exceção for lançada em C, ela irá até B para ser tratada; se não houver tratamento no bloco `try-catch`, B não será executada e a exceção irá até A, que pode ou tratá-la ou derrubar o aplicativo de vez. A exceção, como visto, pode ser lançada por meio da instrução `throw new`, mas há uma particularidade:
+
+- Se C lança uma exceção e B está preparada para mandar a função para A mas usa a instrução `throw [Nome do Objeto que contém a Exceção]`, o compilador .NET modifica a *stack trace* pois exclui a função C e passa a considerar que o erro foi gerado somente a partir da função B!
+
+- Se C lança uma exceção, B está com um bloco `try-catch` e somente com a instrução `throw` no `catch`, a função C não será apagada da pilha de chamadas, pois o compilador entende que B só está passando a exceção adiante para A tratar! 
+
