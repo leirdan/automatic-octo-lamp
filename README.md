@@ -1585,3 +1585,83 @@ O compilador acusa um erro! Mas por que isso acontece? Note que o método é do 
     }
 }
 ```
+
+## 2. ERROS LEGÍVEIS
+
+O aplicativo da loja Hellfire precisa sofrer uma refatoração na classe de `Employee`: a propriedade de ID continua sendo passível de ser mudada na classe, mesmo que já esteja definida no objeto. A demanda é para que haja uma restrição de utilização dessa propriedade e também uma verificação que jogue uma exceção se o ID for negativo ou nulo.
+
+Em `Employee.cs`, deve-se remover a propriedade privada *_id* e retirar o método *set* do campo público *ID*, tornando ele somente leitura a partir do momento que o objeto é instanciado:
+
+```cs
+public int ID { get; }
+```
+> Lembrando que o compilador, ao ler isso, gera um campo privado interno chamado *_id* para executar esse campo aqui, eliminando a necessidade de existir previamente a propriedade *_id*.
+
+No construtor, é preciso verificar se o ID do objeto criado é menor ou igual a 0, e, se sim, lançar uma exceção. Isso resulta no seguinte código:
+
+```cs
+ public Employee(string name, string cpf, int id, double wage)
+        {
+            if (id <= 0)
+            {
+                throw new Exception("ID inválido!");
+            }
+            ID = id;
+            Name = name;
+            CPF = cpf;
+            Wage = wage;
+            Employees++;
+        }
+```
+> `throw new Exception` foi usado aqui na ausência do bloco `try-catch`, definindo a mensagem do erro como "ID inválido!".
+
+E, no arquivo principal `Program.cs`:
+```cs
+    try
+    {
+        Dev james = new Dev("James", "231-749-182-91", -1, 3410.00);
+        Console.WriteLine(james.Name);
+    } 
+    catch (Exception)
+    {
+        Console.WriteLine(e.Message);
+    }
+```
+
+Porém, esse é o tratamento dado para qualquer tipo de exceção, já que todos pertencem à classe `Exception`, então é um tratamento de erro bem genérico e não informa muito ao desenvolvedor que está lendo este código. Para melhorar a legibilidade - e também o tratamento -, é uma boa prática especificar o tipo do erro esperado, tanto no `catch` quanto na mensagem de erro:
+```cs
+catch (ArgumentException e)
+    {
+        Console.WriteLine("Ocorreu um erro do tipo ArgumentException.");
+        Console.WriteLine(e.Message);
+    }
+```
+Ao executar novamente o método *Main()*, será impresso no console a mensagem de que ocorreu um erro e, em seguida, a mensagem contida no objeto `e` da classe `ArgumentException` (ou seja, a mensagem definida na exceção da classe `Employee`, "ID inválido!"). Mas e se existirem muitas verificações devido a ter muitas propriedades na classe? Pode se tornar difícil de encontrar exatamente qual parâmetro teve problema...
+
+A solução para isso é passar no construtor da exceção um segundo argumento: *paramName*, que indica qual foi exatamente o parâmetro onde ocorreu o problema. Esse segundo argumento é um texto, que pode ser definido tanto manualmente quanto por meio do operador `nameof`, muito útil para manter sempre o nome que está no parâmetro alinhado com o nome exibido no console. Adicionando mais um tratamento para o campo *name*, tem-se o seguinte código no construtor de `Employee`:
+```cs
+if (id <= 0)
+{
+    throw new ArgumentException("ID inválido!", nameof(id));
+}
+
+if (name == "")
+{
+    throw new ArgumentException("Nome inválido!", nameof(name));
+}
+```
+E o seguinte em `Program.cs`:
+
+```cs
+try
+{
+    Dev james = new Dev("", "231-749-182-91", -1, 3410.00);
+    Console.WriteLine(james.Name);
+} 
+catch (ArgumentException e)
+{
+    Console.WriteLine("Ocorreu um erro do tipo ArgumentException.");
+    Console.WriteLine(e.Message);
+}
+```
+> Mas onde está esse tal *paramName*? É possível utilizá-lo de forma explícita, colocando um novo método *WriteLine(e.ParamName)* mas não é necessário, visto que o compilador adiciona no console uma mensagem extra informando o nome do parâmetro que está sendo passado errado.
