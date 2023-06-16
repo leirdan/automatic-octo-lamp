@@ -1665,3 +1665,117 @@ catch (ArgumentException e)
 }
 ```
 > Mas onde está esse tal *paramName*? É possível utilizá-lo de forma explícita, colocando um novo método *WriteLine(e.ParamName)* mas não é necessário, visto que o compilador adiciona no console uma mensagem extra informando o nome do parâmetro que está sendo passado errado.
+
+## 3. CRIANDO SUA PRÓPRIA EXCEÇÃO
+
+O gerente da Hellfire apontou um problema no código da classe `Album`: o método *SellRecord()* não faz nenhuma verificação pra garantir que, por exemplo, um cliente não possa comprar 3 discos de um mesmo álbum que só tem 1 disco disponível. É preciso refatorar esse código e implementar algum meio de impedir uma compra assim. Alterando o método para só ser executado caso hajam unidades disponíveis, há o código:
+```cs
+public void SellRecord(int qtd)
+{
+    if (this.Quantity > 0 && this.Quantity >= qtd)
+    {
+        Console.Write($"the album's price is US${this.Price}. will you buy {qtd} units of this album? (it costs US${this.Price * qtd}) ");
+        var option = Console.ReadLine();
+        if (option == "yes")
+        {
+            Quantity -= qtd;
+            Console.Write($"there are left {this.Quantity} units of this album. ");
+            Console.WriteLine("thanks, bye!");
+        } else if (option == "no")
+        {
+            Console.WriteLine("okay.");
+        }
+        else
+        {
+            Console.WriteLine("you didn't answer my question..");
+            SellRecord(qtd);
+
+        }
+    }
+    else
+    {
+        throw new Exception("Não há albuns suficientes!");
+    }
+}
+```
+
+Em `Program.cs`:
+```cs
+static void Main(string[] args)
+{
+    Album upAllNight = new Album("Up All Night", "Taken by One Direction.", "UK", 0.234, 4, 40.0, 60, 0);
+    try
+    {
+        upAllNight.SellRecord(5);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e.Message);
+    }
+    Console.ReadLine();
+}
+```
+Perceba que o fluxo já cairá direto na exceção, e é uma exceção genérica e problemática, pois todas as outras exceções podem cair dentro e receber o mesmo tratamento. É necessário utilizar alguma exceção mais específica. Por que não criar a própria exceção que faz exatamente o especificado?
+
+Será criada a exceção **InsufficientRecordsException** que, como padrão, herda da classe-pai **Exception** e tem 3 possibilidades de construtores. Será lançada na classe `Album` e tratada no programa principal:
+
+*InsufficientRecordsException.cs*:
+```cs
+namespace HellfireStore
+{
+    class InsufficientRecordsException : Exception
+    {
+        public InsufficientRecordsException() { }
+        public InsufficientRecordsException(string message) : base(message) { }
+        public InsufficientRecordsException(string message,  Exception innerException) : base(message, innerException) { }
+    }
+}
+```
+Lançamento em `Album.cs`:
+```cs
+public void SellRecord(int qtd)
+{
+    if (qtd <= 0)
+    // exceção para caso o número de discos seja negativo ou nulo
+    {
+        throw new ArgumentException($"number of records with an error: it is not allowed the number {qtd}.", nameof(qtd));
+    }
+    if (this.Quantity > 0 && this.Quantity >= qtd)
+    {
+        Console.Write($"the album's price is US${this.Price}. will you buy {qtd} units of this album? (it costs US${this.Price * qtd}) ");
+        var option = Console.ReadLine();
+        if (option == "yes")
+        {
+            Quantity -= qtd;
+            Console.Write($"there are left {this.Quantity} units of this album. ");
+            Console.WriteLine("thanks, bye!");
+        } else if (option == "no")
+        {
+            Console.WriteLine("okay.");
+        }
+        else
+        {
+            Console.WriteLine("you didn't answer my question..");
+            SellRecord(qtd);
+        }
+    }
+    else
+    {
+        throw new InsufficientRecordsException("the store doesn't have the necessary number of records needed to make the sale!");
+    }
+}
+```
+Tratamento em `Program.cs`:
+```cs
+Album upAllNight = new Album("Up All Night", "Taken by One Direction.", "UK", 0.234, 4, 40.0, 60, 0);
+try
+{
+    upAllNight.SellRecord(-5);
+}
+catch (InsufficientRecordsException e)
+{
+    Console.WriteLine("Exceção do tipo InsufficientRecordsException:");
+    Console.WriteLine(e.Message);
+}
+Console.ReadLine();
+```
